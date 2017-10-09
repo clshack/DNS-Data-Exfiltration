@@ -1,0 +1,18 @@
+Function Get-PhInfo {
+$Global:lastCommand = $MyInvocation.line
+$computerSystem = get-wmiobject Win32_ComputerSystem
+$computerBIOS = get-wmiobject Win32_BIOS
+$computerOS = get-wmiobject Win32_OperatingSystem
+$user = whoami
+$r = "" | Out-String -width 80
+$r += "System name: " + $computerSystem.Name | Out-String -width 80
+$r += "Manufacturer: " + $computerSystem.Manufacturer | Out-String -width 80
+$r += "Model: " + $computerSystem.Model | Out-String -width 80
+$r += "Serial Number: " + $computerBIOS.SerialNumber | Out-String -width 80
+$r += "Operating System: " + $computerOS.caption + ", Service Pack " + $computerOS.ServicePackMajorVersion | Out-String -width 80
+$r += "Total Memory in Gigabytes: " + $computerSystem.TotalPhysicalMemory/1gb | Out-String -width 80
+$r += "User logged In: " + $user | out-string -width 80
+$r += "Last Reboot: " + $computerOS.ConvertToDateTime($computerOS.LastBootUpTime) | Out-String -width 80
+return $r
+}
+Get-PhInfo
